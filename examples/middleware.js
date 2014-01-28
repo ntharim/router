@@ -17,15 +17,14 @@ var router = new Router()
 /**
  * Load a user from the server.
  *
- * @param {Context} context
  * @param {Function} next
  */
 
-function loadUser (context, next) {
-  var id = context.params.user;
+function loadUser (next) {
+  var id = this.params.user;
   User.get(id, function (err, user) {
     if (err) return next(err);
-    context.user = user;
+    this.user = user;
     next();
   });
 }
@@ -33,15 +32,14 @@ function loadUser (context, next) {
 /**
  * Load a project from the server.
  *
- * @param {Context} context
  * @param {Function} next
  */
 
-function loadProject (context, next) {
-  var id = context.params.project;
+function loadProject (next) {
+  var id = this.params.project;
   Project.get(id, function (err, project) {
     if (err) return next(err);
-    context.project = project;
+    this.project = project;
     next();
   });
 }
@@ -49,12 +47,11 @@ function loadProject (context, next) {
 /**
  * Render the user page.
  *
- * @param {Context} context
  * @param {Function} next
  */
 
-function renderUser (context, next) {
-  var user = context.user;
+function renderUser (next) {
+  var user = this.user;
   var page = new UserPage(user);
   document.body.innerHTML = '';
   document.body.appendChild(page.el);
@@ -63,13 +60,12 @@ function renderUser (context, next) {
 /**
  * Render the project page.
  *
- * @param {Context} context
  * @param {Function} next
  */
 
-function renderProject (context, next) {
-  var user = context.user;
-  var project = context.project;
+function renderProject (next) {
+  var user = this.user;
+  var project = this.project;
   var page = new ProjectPage(user);
   document.body.innerHTML = '';
   document.body.appendChild(page.el);

@@ -1,6 +1,6 @@
 {
   "name": "router",
-  "repo": "ianstormtaylor/router",
+  "repo": "Ntran013/router",
   "license": "MIT",
   "version": "0.6.2",
   "description": "A nice client-side router.",
@@ -9,11 +9,10 @@
     "component/event": "*",
     "component/link-delegate": "*",
     "component/path-to-regexp": "*",
-    "component/querystring": "*",
+    "visionmedia/node-querystring": "*",
     "component/url": "*",
     "ianstormtaylor/history": "*",
     "segmentio/ware": "*",
-    "timoxley/next-tick": "*",
     "yields/prevent": "*",
     "yields/stop": "*"
   },

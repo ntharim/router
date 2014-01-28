@@ -19,6 +19,12 @@ describe('Context', function () {
     assert('value' == context.query.key);
   });
 
+  it('should store a nested querystring', function () {
+    var context = new Context('/path?key[one]=value&key[two]=eulav');
+    assert('value' == context.query.key.one);
+    assert('eulav' == context.query.key.two);
+  });  
+
   it('should create an empty params array', function () {
     var context = new Context();
     assert(context.params instanceof Array);

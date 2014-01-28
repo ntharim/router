@@ -4,7 +4,7 @@
 
 ## Installation
 
-    $ component install ianstormtaylor/router
+    $ component install Ntran013/router
 
 ## Example
 
@@ -19,28 +19,28 @@ var router = new Router()
   .on('/:user/:repo', user, repo, renderRepo)
   .start();
 
-function user (context, next) {
-  var id = context.params.user;
+function user (next) {
+  var id = this.params.user;
   var user = db.users.get(id);
-  context.user = user;
+  this.user = user;
   next();
 }
 
-function repo (context, next) {
-  var id = context.params.repo;
+function repo (next) {
+  var id = this.params.repo;
   var repo = db.users.get(id);
-  context.repo = repo;
+  this.repo = repo;
   next();
 }
 
-function renderUser (context, next) {
-  var user = context.user;
+function renderUser (next) {
+  var user = this.user;
   render(user);
 }
 
-function renderRepo (context, next) {
-  var user = context.user;
-  var repo = context.repo;
+function renderRepo (next) {
+  var user = this.user;
+  var repo = this.repo;
   render(user, repo);
 }
 ```

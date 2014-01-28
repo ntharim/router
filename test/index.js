@@ -12,13 +12,13 @@ describe('Router', function () {
   });
 
   it('should bind to popstate', function (done) {
-    history.push('/popstate-one');
-    history.push('/popstate-two');
+    history.push('/popstate-one', {}); // empty state object
+    history.push('/popstate-two', {}); // to fix initial popstate in Webkit
     new Router()
-      .on('/popstate-one', function (context, next) {
+      .on('/popstate-one', function () {
         done();
       });
-    setTimeout(history.back, 1001);
+    history.back();
   });
 
   describe('#use', function () {
@@ -50,6 +50,7 @@ describe('Router', function () {
     it('should push path to history', function () {
       var router = new Router().push('/push');
       assert('/push' == history.path());
+      assert(isEmpty(history.state()) === true);
     });
 
     it('should push state to history', function () {
@@ -62,6 +63,7 @@ describe('Router', function () {
     it('should replace history', function () {
       var router = new Router().replace('/replace');
       assert('/replace' == history.path());
+      assert(isEmpty(history.state()) === true);
     });
 
     it('should replace state in history', function () {
@@ -73,10 +75,10 @@ describe('Router', function () {
   describe('#dispatch', function () {
     it('should match the right route', function (done) {
       var router = new Router()
-        .on('/one', function (context, next) {
+        .on('/one', function (next) {
           assert(false); next();
         })
-        .on('/two', function (context, next) {
+        .on('/two', function () {
           done();
         })
         .dispatch('/two');
@@ -84,12 +86,12 @@ describe('Router', function () {
 
     it('should match params', function (done) {
       var router = new Router()
-        .on('/route/:one/:two', function (context, next) {
-          assert(2 == context.params.length);
-          assert('1' == context.params[0]);
-          assert('1' == context.params.one);
-          assert('2' == context.params[1]);
-          assert('2' == context.params.two);
+        .on('/route/:one/:two', function () {
+          assert(2 == this.params.length);
+          assert('1' == this.params[0]);
+          assert('1' == this.params.one);
+          assert('2' == this.params[1]);
+          assert('2' == this.params.two);
           done();
         })
         .dispatch('/route/1/2');
@@ -97,10 +99,10 @@ describe('Router', function () {
 
     it('should match asterisks', function (done) {
       var router = new Router()
-        .on('/route/*/*', function (context, next) {
-          assert(2 === context.params.length);
-          assert('1' === context.params[0]);
-          assert('2' === context.params[1]);
+        .on('/route/*/*', function () {
+          assert(2 === this.params.length);
+          assert('1' === this.params[0]);
+          assert('2' === this.params[1]);
           done();
         })
         .dispatch('/route/1/2');
@@ -108,11 +110,11 @@ describe('Router', function () {
 
     it('should match params and asterisks', function (done) {
       var router = new Router()
-        .on('/route/:param/*', function (context, next) {
-          assert(2 === context.params.length);
-          assert('param' === context.params.param);
-          assert('param' === context.params[0]);
-          assert('asterisk' === context.params[1]);
+        .on('/route/:param/*', function () {
+          assert(2 === this.params.length);
+          assert('param' === this.params.param);
+          assert('param' === this.params[0]);
+          assert('asterisk' === this.params[1]);
           done();
         })
         .dispatch('/route/param/asterisk');
@@ -120,22 +122,33 @@ describe('Router', function () {
 
     it('should pass a next callback', function (done) {
       var router = new Router()
-        .on('/route', function (context, next) { next(); })
-        .on('/route', function (context, next) { done(); })
+        .on('/route', function (next) {
+          this.user = 'user';
+          next(); 
+        })
+        .on('/route', function (next) {
+          assert('user' === this.user);
+          this.user = 'not_user';
+          next(); 
+        })        
+        .on('/route', function () {
+          assert('not_user' === this.user);
+          done(); 
+        })
         .dispatch('/route');
     });
 
     it('should auto-next callbacks with single arity', function (done) {
       var router = new Router()
-        .on('/route', noop, function (context, next) { done(); })
+        .on('/route', noop, function () { done(); })
         .dispatch('/route');
     });
 
     it('should call in middleware', function (done) {
       new Router()
         .on('/route')
-        .in(function (context, next) {
-          assert(context.path === '/route');
+        .in(function () {
+          assert(this.path === '/route');
           done();
         })
         .dispatch('/route');
@@ -145,12 +158,12 @@ describe('Router', function () {
       var i = 0;
       var router = new Router()
         .on('/route')
-        .in(function (context, next) {
-          assert(context.path === '/route');
+        .in(function () {
+          assert(this.path === '/route');
           i++;
         })
-        .out(function (context, next) {
-          assert(context.path === '/route');
+        .out(function () {
+          assert(this.path === '/route');
           assert(i === 1);
           done();
         })
@@ -162,7 +175,7 @@ describe('Router', function () {
   describe('#go', function () {
     it('should push and dispatch a path', function (done) {
       var router = new Router()
-        .on('/route', function (context, next) {
+        .on('/route', function () {
           assert('/route' == history.path());
           assert('state' == history.state().state);
           done();
@@ -173,15 +186,15 @@ describe('Router', function () {
     it('should default to the current path', function (done) {
       var router = new Router()
         .replace('/route')
-        .on('/route', function (context, next) { done(); })
+        .on('/route', function () { done(); })
         .go();
     });
 
     it('should add the querystring', function (done) {
       new Router()
         .replace('/route?key=value')
-        .on('/route', function (context, next) {
-          assert('value' == context.query.key);
+        .on('/route', function () {
+          assert('value' == this.query.key);
           done();
         })
         .go();
@@ -199,10 +212,10 @@ describe('Router', function () {
       var i = 0;
       var router = new Router()
         .push('/start')
-        .on('/start', function (context, next) {
+        .on('/start', function () {
           i++;
         })
-        .on('/link', function (context, next) {
+        .on('/link', function () {
           assert(1 == i);
           done();
         })
@@ -212,3 +225,11 @@ describe('Router', function () {
   });
 
 });
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
+}
