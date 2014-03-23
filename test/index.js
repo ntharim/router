@@ -17,7 +17,8 @@ describe('Router', function () {
     new Router()
       .on('/popstate-one', function () {
         done();
-      });
+      })
+      .bind();
     history.back();
   });
 
