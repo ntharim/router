@@ -123,19 +123,21 @@ describe('Router', function () {
 
     it('should pass a next callback', function (done) {
       var router = new Router()
-        .on('/route', function (next) {
-          this.user = 'user';
-          next(); 
-        })
-        .on('/route', function (next) {
-          assert('user' === this.user);
-          this.user = 'not_user';
-          next(); 
-        })        
-        .on('/route', function () {
-          assert('not_user' === this.user);
-          done(); 
-        })
+        .on('/route',
+          function (next) {
+            this.user = 'user';
+            next(); 
+          },
+          function (next) {
+            assert('user' === this.user);
+            this.user = 'not_user';
+            next(); 
+          },
+          function () {
+            assert('not_user' === this.user);
+            done(); 
+          }
+        )
         .dispatch('/route');
     });
 

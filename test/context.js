@@ -16,11 +16,13 @@ describe('Context', function () {
 
   it('should store a querystring', function () {
     var context = new Context('/path?key=value');
+    assert('/path' == context.path);
     assert('value' == context.query.key);
   });
 
   it('should store a nested querystring', function () {
     var context = new Context('/path?key[one]=value&key[two]=eulav');
+    assert('/path' == context.path);
     assert('value' == context.query.key.one);
     assert('eulav' == context.query.key.two);
   });  
